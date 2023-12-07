@@ -7,6 +7,8 @@ import mongoose from "mongoose";
 import morgan from "morgan";
 //job-router
 import jobRouter from "./router/jobRouter.js";
+import authRouter from "./router/userRouter.js";
+
 //error Middleware
 import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
 
@@ -25,6 +27,7 @@ app.get("/", (req, res) => {
 // });
 
 app.use("/api/v1/jobs", jobRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.use(errorHandlerMiddleware);
 app.use("*", (req, res) => {
