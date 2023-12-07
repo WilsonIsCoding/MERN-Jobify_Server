@@ -3,30 +3,29 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 const app = express();
+app.use(cookieParser());
+import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import morgan from "morgan";
 //job-router
 import jobRouter from "./router/jobRouter.js";
-import authRouter from "./router/userRouter.js";
+import authRouter from "./router/authRouter.js";
+import userRouter from "./router/userRouter.js";
 
 //error Middleware
 import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
+import { authenticateUser } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 app.use(express.json());
-
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
-// app.post("/api/v1/test", validateTest, (req, res) => {
-//   const { name } = req.body;
-//   res.json({ message: `hello ${name}` });
-// });
-
-app.use("/api/v1/jobs", jobRouter);
+app.use("/api/v1/jobs", authenticateUser, jobRouter);
+app.use("/api/v1/users", authenticateUser, userRouter);
 app.use("/api/v1/auth", authRouter);
 
 app.use(errorHandlerMiddleware);
