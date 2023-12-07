@@ -1,7 +1,5 @@
 import Job from "../models/JobModel.js";
 import { StatusCodes } from "http-status-codes";
-import { NotFoundError } from "../errors/customError.js";
-import { nanoid } from "nanoid";
 
 //GET JOBS
 export const getAllJobs = async (req, res) => {
