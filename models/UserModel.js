@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
   name: String,
@@ -6,17 +6,21 @@ const UserSchema = new mongoose.Schema({
   password: String,
   lastName: {
     type: String,
-    default: 'lastName',
+    default: "lastName",
   },
   location: {
     type: String,
-    default: 'my city',
+    default: "my city",
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: ["user", "admin"],
+    default: "user",
   },
 });
-
-export default mongoose.model('User', UserSchema);
+UserSchema.methods.toJSON = function () {
+  let obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
+export default mongoose.model("User", UserSchema);
