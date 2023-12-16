@@ -8,6 +8,8 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import cors from "cors";
+//cloud
+import cloudinary from "cloudinary";
 //job-router
 import jobRouter from "./router/jobRouter.js";
 import authRouter from "./router/authRouter.js";
@@ -27,7 +29,11 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 app.use(express.json());
-
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
 const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.resolve(__dirname, "./public")));
 //cors
