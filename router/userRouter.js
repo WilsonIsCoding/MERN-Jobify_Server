@@ -11,12 +11,13 @@ const router = Router();
 
 router.get("/current-user", getCurrentUser);
 router.patch(
-  "/update-user",
-  upload.single("avatar"),
-  authorizePermissions("admin"),
+  '/update-user',
+  upload.single('avatar'),
   validateUpdateUserInput,
   updateUser
 );
+
+
 router.get("/admin/app-stats", getApplicationStats);
 
 export default router;
