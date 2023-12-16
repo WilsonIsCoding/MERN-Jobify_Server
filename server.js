@@ -13,6 +13,11 @@ import jobRouter from "./router/jobRouter.js";
 import authRouter from "./router/authRouter.js";
 import userRouter from "./router/userRouter.js";
 
+//public
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import path from "path";
+
 //error Middleware
 import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
 import { authenticateUser } from "./middleware/authMiddleware.js";
@@ -23,13 +28,15 @@ if (process.env.NODE_ENV === "development") {
 }
 app.use(express.json());
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.resolve(__dirname, "./public")));
 //cors
 app.use(
   cors({
     origin: "http://localhost:3000",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
-    sameSite: "None"
+    sameSite: "None",
   })
 );
 
