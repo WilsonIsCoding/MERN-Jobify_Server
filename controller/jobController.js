@@ -1,13 +1,45 @@
 import Job from "../models/JobModel.js";
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
-import day from 'dayjs';
+import day from "dayjs";
 
 //GET JOBS
 export const getAllJobs = async (req, res) => {
-  // const jobs = await Job.find({ createdBy: req.user.userId });
-  const jobs = await Job.find({});
-  res.status(StatusCodes.OK).json({ jobs });
+  const { search, jobStatus, jobType, sort, page, limit } = req.query;
+  const queryObject = {
+    createdBy: req.user.userId,
+  };
+  if (search) {
+    queryObject.$or = [
+      { position: { $regex: search } },
+      { company: { $regex: search } },
+    ];
+  }
+  if (jobStatus && jobStatus !== "all") {
+    queryObject.jobStatus = jobStatus;
+  }
+  if (jobType && jobType !== "all") {
+    queryObject.jobType = jobType;
+  }
+  const sortOption = {
+    newest: "-createdAt",
+    oldest: "createdAt",
+    "a-z": "position",
+    "z-a": "-position",
+  };
+  const currentPage = Number(page) || 1;
+  const currentLimit = Number(limit) || 10;
+  const skip = (currentPage - 1) * currentLimit;
+  const totalJobs = await Job.countDocuments(queryObject);
+  const sortKey = sortOption[sort] || sortOption.newest;
+  const numOfPage = Math.ceil(totalJobs / currentLimit);
+  const jobs = await Job.find(queryObject)
+    .sort(sortKey)
+    .skip(skip)
+    .limit(currentLimit);
+  res
+    .status(StatusCodes.OK)
+    .json({ totalJobs, jobs, totalPage: numOfPage, currentPage });
 };
 //POST JOBS
 export const createJob = async (req, res) => {
@@ -68,19 +100,19 @@ export const showStats = async (req, res) => {
     { $limit: 6 },
   ]);
   monthlyApplications = monthlyApplications
-  .map((item) => {
-    const {
-      _id: { year, month },
-      count,
-    } = item;
+    .map((item) => {
+      const {
+        _id: { year, month },
+        count,
+      } = item;
 
-    const date = day()
-      .month(month - 1)
-      .year(year)
-      .format('MMM YY');
-    return { date, count };
-  })
-  .reverse();
+      const date = day()
+        .month(month - 1)
+        .year(year)
+        .format("MMM YY");
+      return { date, count };
+    })
+    .reverse();
 
-res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
+  res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
 };
