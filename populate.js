@@ -13,7 +13,6 @@ try {
   const jsonJobs = JSON.parse(
     await readFile(new URL("./utils/mockData.json", import.meta.url))
   );
-  console.log(jsonJobs)
   const jobs = jsonJobs.map((job) => {
     return { ...job, createdBy: user._id };
   });
