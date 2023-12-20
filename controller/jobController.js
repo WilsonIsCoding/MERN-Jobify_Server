@@ -1,104 +1,110 @@
-import Job from "../models/JobModel.js";
-import { StatusCodes } from "http-status-codes";
-import mongoose from "mongoose";
-import day from "dayjs";
+import Job from '../models/JobModel.js';
+import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
+import day from 'dayjs';
 
-//GET JOBS
 export const getAllJobs = async (req, res) => {
-  const { search, jobStatus, jobType, sort, page, limit } = req.query;
+  const { search, jobStatus, jobType, sort } = req.query;
+
   const queryObject = {
     createdBy: req.user.userId,
   };
+
   if (search) {
     queryObject.$or = [
-      { position: { $regex: search } },
-      { company: { $regex: search } },
+      { position: { $regex: search, $options: 'i' } },
+      { company: { $regex: search, $options: 'i' } },
     ];
   }
-  if (jobStatus && jobStatus !== "all") {
+
+  if (jobStatus && jobStatus !== 'all') {
     queryObject.jobStatus = jobStatus;
   }
-  if (jobType && jobType !== "all") {
+  if (jobType && jobType !== 'all') {
     queryObject.jobType = jobType;
   }
-  const sortOption = {
-    newest: "-createdAt",
-    oldest: "createdAt",
-    "a-z": "position",
-    "z-a": "-position",
+
+  const sortOptions = {
+    newest: '-createdAt',
+    oldest: 'createdAt',
+    'a-z': 'position',
+    'z-a': '-position',
   };
-  const currentPage = Number(page) || 1;
-  const currentLimit = Number(limit) || 10;
-  const skip = (currentPage - 1) * currentLimit;
-  const totalJobs = await Job.countDocuments(queryObject);
-  const sortKey = sortOption[sort] || sortOption.newest;
-  const numOfPage = Math.ceil(totalJobs / currentLimit);
+
+  const sortKey = sortOptions[sort] || sortOptions.newest;
+
+  // setup pagination
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
   const jobs = await Job.find(queryObject)
     .sort(sortKey)
     .skip(skip)
-    .limit(currentLimit);
+    .limit(limit);
+
+  const totalJobs = await Job.countDocuments(queryObject);
+  const numOfPages = Math.ceil(totalJobs / limit);
   res
     .status(StatusCodes.OK)
-    .json({ totalJobs, jobs, totalPage: numOfPage, currentPage });
+    .json({ totalJobs, numOfPages, currentPage: page, jobs });
 };
-//POST JOBS
+
 export const createJob = async (req, res) => {
   req.body.createdBy = req.user.userId;
   const job = await Job.create(req.body);
   res.status(StatusCodes.CREATED).json({ job });
 };
-//GET SINGLE JOB
+
 export const getJob = async (req, res) => {
   const job = await Job.findById(req.params.id);
-  res.status(200).json({ job });
+  res.status(StatusCodes.OK).json({ job });
 };
 
-//EDIT JOB
 export const updateJob = async (req, res) => {
-  const updateJob = await Job.findByIdAndUpdate(req.params.id, req.body, {
+  const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
   });
-  if (!updateJob) {
-    return res.status(404).json({ msg: `no job with id ${req.params.id}` });
-  }
-  res.status(StatusCodes.OK).json({ msg: "job modified", updateJob });
+
+  res.status(StatusCodes.OK).json({ msg: 'job modified', job: updatedJob });
 };
-//DELETE JOB
+
 export const deleteJob = async (req, res) => {
-  const removeJob = await Job.findByIdAndDelete(req.params.id);
-  if (!removeJob) {
-    return res.status(404).json({ msg: `no job with id ${req.params.id}` });
-  }
-  res.status(StatusCodes.OK).json({ json: removeJob });
+  const removedJob = await Job.findByIdAndDelete(req.params.id);
+  res.status(StatusCodes.OK).json({ msg: 'job deleted', job: removedJob });
 };
 
 export const showStats = async (req, res) => {
   let stats = await Job.aggregate([
     { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userId) } },
-    { $group: { _id: "$jobStatus", count: { $sum: 1 } } },
+    { $group: { _id: '$jobStatus', count: { $sum: 1 } } },
   ]);
-  stats = stats.reduce((acc, crr) => {
-    const { _id: title, count } = crr;
+
+  stats = stats.reduce((acc, curr) => {
+    const { _id: title, count } = curr;
     acc[title] = count;
     return acc;
   }, {});
-  console.log(stats);
+
   const defaultStats = {
     pending: stats.pending || 0,
     interview: stats.interview || 0,
     declined: stats.declined || 0,
   };
+
   let monthlyApplications = await Job.aggregate([
     { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userId) } },
     {
       $group: {
-        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
         count: { $sum: 1 },
       },
     },
-    { $sort: { "_id.year": -1, "_id.month": -1 } },
+    { $sort: { '_id.year': -1, '_id.month': -1 } },
     { $limit: 6 },
   ]);
+
   monthlyApplications = monthlyApplications
     .map((item) => {
       const {
@@ -109,7 +115,8 @@ export const showStats = async (req, res) => {
       const date = day()
         .month(month - 1)
         .year(year)
-        .format("MMM YY");
+        .format('MMM YY');
+
       return { date, count };
     })
     .reverse();
