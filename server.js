@@ -49,9 +49,9 @@ app.use(
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
-// app.get('*', (req, res) => {
-//   res.sendFile(path.resolve(__dirname, './client/dist', 'index.html'));
-// });
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, './client/dist', 'index.html'));
+});
 
 app.use("/api/v1/jobs", authenticateUser, jobRouter);
 app.use("/api/v1/users", authenticateUser, userRouter);
