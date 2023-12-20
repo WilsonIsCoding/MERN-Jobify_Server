@@ -40,7 +40,7 @@ app.use(helmet());
 app.use(mongoSanitize());
 
 app.get('/', (req, res) => {
-  res.send('Hello World');
+  res.sendFile(path.resolve(__dirname, './client/dist', 'index.html'));
 });
 
 app.get('/api/v1/test', (req, res) => {
