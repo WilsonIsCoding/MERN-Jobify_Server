@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 const Wrapper = styled.section`
   nav {
@@ -13,7 +13,6 @@ const Wrapper = styled.section`
     min-height: calc(100vh - var(--nav-height));
     display: grid;
     align-items: center;
-    margin-top: -3rem;
   }
   h1 {
     font-weight: 700;
@@ -23,13 +22,19 @@ const Wrapper = styled.section`
     margin-bottom: 1.5rem;
   }
   p {
-    line-height: 2;
+    line-height: 1.5;
     color: var(--text-secondary-color);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     max-width: 35em;
+    p {
+      color: var(--primary-500);
+    }
   }
   .register-link {
     margin-right: 1rem;
+  }
+  .explore-link {
+    margin-left: 1rem;
   }
   .main-img {
     display: none;
