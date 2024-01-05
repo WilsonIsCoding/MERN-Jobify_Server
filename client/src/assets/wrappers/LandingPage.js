@@ -35,6 +35,7 @@ const Wrapper = styled.section`
   }
   .explore-link {
     margin-left: 1rem;
+    margin-top: 1rem;
   }
   .main-img {
     display: none;

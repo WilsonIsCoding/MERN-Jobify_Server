@@ -709,6 +709,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   }
   .explore-link {
     margin-left: 1rem;
+    margin-top: 1rem;
   }
   .main-img {
     display: none;
